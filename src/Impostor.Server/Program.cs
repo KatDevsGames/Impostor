@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
+using Impostor.Api.Events;
 using Impostor.Api.Events.Managers;
 using Impostor.Api.Games;
 using Impostor.Api.Games.Managers;
@@ -20,6 +21,8 @@ using Impostor.Server.Net.Redirector;
 using Impostor.Server.Plugins;
 using Impostor.Server.Recorder;
 using Impostor.Server.Utils;
+using Impostor.Server.WarpWorld.CrowdControl;
+using Impostor.Server.WarpWorld.CrowdControl.GameState;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -206,6 +209,10 @@ namespace Impostor.Server
                     services.AddSingleton<IMessageWriterProvider, MessageWriterProvider>();
                     services.AddSingleton<IGameCodeFactory, GameCodeFactory>();
                     services.AddSingleton<IEventManager, EventManager>();
+
+                    services.AddSingleton<GameStateTracker>();
+                    services.AddSingleton<IEventListener, CrowdControlManager>();
+
                     services.AddSingleton<Matchmaker>();
                     services.AddHostedService<MatchmakerService>();
                 })

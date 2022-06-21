@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<project baseDir="." outputDir="." xmlns="http://confuser.codeplex.com">
+  <rule preset="minimum" pattern="true">
+    <protection id="anti debug" />
+    <!--<protection id="anti dump" />-->
+    <protection id="anti ildasm" />
+    <!--<protection id="anti tamper" />-->
+    <protection id="constants" />
+    <protection id="ctrl flow" />
+    <!--<protection id="invalid metadata" />-->
+    <!--<protection id="ref proxy" />-->
+    <protection id="rename" />
+    <protection id="resources" />
+  </rule>
+  <module path="ConnectorLib.dll" />
+  <probePath>C:\Program Files\dotnet\shared\Microsoft.NETCore.App\latest_5.0\</probePath>
+</project>

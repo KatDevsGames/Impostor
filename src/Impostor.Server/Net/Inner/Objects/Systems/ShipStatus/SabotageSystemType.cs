@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using Impostor.Api.Net.Messages;
 
 namespace Impostor.Server.Net.Inner.Objects.Systems.ShipStatus
 {
-    public class SabotageSystemType : ISystemType
+    public partial class SabotageSystemType : ISystemType
     {
         private readonly IActivatable[] _specials;
 

@@ -19,6 +19,14 @@
     <Copyright>Copyright © AeonLucid 2020</Copyright>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Impostor.Api\Impostor.Api.csproj" />
     <ProjectReference Include="..\Impostor.Hazel\Hazel\Hazel.csproj" />
@@ -29,6 +37,7 @@
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="5.0.4" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Serilog.Extensions.Hosting" Version="4.1.2" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="StyleCop.Analyzers.Unstable" Version="1.2.0.333">
@@ -37,6 +46,12 @@
     </PackageReference>
     <!-- HACK: Some plugins depend on System.IO.Pipelines and expect the version to be 5.0.0.0, but .NET 5 only ships version 5.0.0.1. It is pretty hard to convince MSBuild to build against the correct DLL, so we special case it here. Remove once we move past .NET 5 -->
     <PackageReference Include="System.IO.Pipelines" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="ConnectorLib">
+      <HintPath>.\WarpWorld\CrowdControl\ConnectorLib\net5.0\ConnectorLib.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
@@ -55,6 +70,12 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="words.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

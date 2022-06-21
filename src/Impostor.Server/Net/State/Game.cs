@@ -67,7 +67,7 @@ namespace Impostor.Server.Net.State
 
         public GameStates GameState { get; private set; }
 
-        public GameOptionsData Options { get; }
+        public GameOptionsData Options { get; internal set; }
 
         public IDictionary<object, object> Items { get; }
 

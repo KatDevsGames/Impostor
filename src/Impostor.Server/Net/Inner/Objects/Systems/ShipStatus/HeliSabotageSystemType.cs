@@ -13,7 +13,7 @@ namespace Impostor.Server.Net.Inner.Objects.Systems.ShipStatus
             CompletedConsoles = new HashSet<byte>();
         }
 
-        public float Countdown { get; private set; }
+        public float Countdown { get; internal set; }
 
         public float Timer { get; private set; }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Impostor.Api.Net.Messages;
 
@@ -12,7 +12,7 @@ namespace Impostor.Server.Net.Inner.Objects.Systems.ShipStatus
             UserConsolePairs = new HashSet<Tuple<byte, byte>>();
         }
 
-        public float Countdown { get; private set; }
+        public float Countdown { get; internal set; }
 
         public HashSet<Tuple<byte, byte>> UserConsolePairs { get; }
 
