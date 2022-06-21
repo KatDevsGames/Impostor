@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.Loader;
 using Impostor.Api.Events;
 using Impostor.Api.Events.Managers;
 using Impostor.Api.Games;
@@ -29,6 +31,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.ObjectPool;
 using Serilog;
 using Serilog.Events;
+using Serilog.Settings.Configuration;
 
 namespace Impostor.Server
 {
@@ -36,31 +39,9 @@ namespace Impostor.Server
     {
         private static int Main(string[] args)
         {
-#if DEBUG
-            var logLevel = LogEventLevel.Debug;
-#else
-            var logLevel = LogEventLevel.Information;
-#endif
-
-            if (args.Contains("--verbose"))
-            {
-                logLevel = LogEventLevel.Verbose;
-            }
-            else if (args.Contains("--errors-only"))
-            {
-                logLevel = LogEventLevel.Error;
-            }
-
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Is(logLevel)
-#if DEBUG
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Debug)
-#else
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-#endif
-                .Enrich.FromLogContext()
                 .WriteTo.Console()
-                .CreateLogger();
+                .CreateBootstrapLogger();
 
             try
             {
@@ -216,7 +197,55 @@ namespace Impostor.Server
                     services.AddSingleton<Matchmaker>();
                     services.AddHostedService<MatchmakerService>();
                 })
-                .UseSerilog()
+                .UseSerilog((context, loggerConfiguration) =>
+                {
+#if DEBUG
+                    var logLevel = LogEventLevel.Debug;
+#else
+                    var logLevel = LogEventLevel.Information;
+#endif
+
+                    if (args.Contains("--verbose"))
+                    {
+                        logLevel = LogEventLevel.Verbose;
+                    }
+                    else if (args.Contains("--errors-only"))
+                    {
+                        logLevel = LogEventLevel.Error;
+                    }
+
+                    static Assembly? LoadSerilogAssembly(AssemblyLoadContext loadContext, AssemblyName name)
+                    {
+                        var paths = new[] { AppDomain.CurrentDomain.BaseDirectory, Directory.GetCurrentDirectory() };
+                        foreach (var path in paths)
+                        {
+                            try
+                            {
+                                return loadContext.LoadFromAssemblyPath(Path.Combine(path, name.Name + ".dll"));
+                            }
+                            catch (FileNotFoundException)
+                            {
+                            }
+                        }
+
+                        return null;
+                    }
+
+                    AssemblyLoadContext.Default.Resolving += LoadSerilogAssembly;
+
+                    loggerConfiguration
+                        .MinimumLevel.Is(logLevel)
+#if DEBUG
+                        .MinimumLevel.Override("Microsoft", LogEventLevel.Debug)
+#else
+                        .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+#endif
+                        .Enrich.FromLogContext()
+                        .WriteTo.Console()
+                        .ReadFrom.Configuration(context.Configuration, ConfigurationAssemblySource.AlwaysScanDllFiles);
+
+                    AssemblyLoadContext.Default.Resolving -= LoadSerilogAssembly;
+                })
                 .UseConsoleLifetime()
                 .UsePluginLoader(pluginConfig);
         }
