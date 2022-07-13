@@ -1,8 +1,13 @@
+using System;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Threading.Tasks;
 using Impostor.Api.Games;
 using Impostor.Api.Innersloth;
 using Impostor.Server.Net.Manager;
 using Impostor.Server.Net.State;
+using Serilog;
 
 namespace Impostor.Server.WarpWorld.CrowdControl;
 
@@ -13,6 +18,14 @@ internal static class Extensions
     static Extensions()
     {
         game_gameState = typeof(Game).GetProperty("GameState");
+    }
+
+    [DebuggerStepThrough]
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    public static async void Forget(this Task task)
+    {
+        try { await task.ConfigureAwait(false); }
+        catch (Exception ex) { Log.Error(ex, ex.Message); }
     }
 
     public static bool TryFind(this GameManager gameManager, GameCode code, out Game? game)

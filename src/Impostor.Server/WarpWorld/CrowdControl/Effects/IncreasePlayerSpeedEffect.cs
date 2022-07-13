@@ -23,7 +23,7 @@ namespace Impostor.Server.WarpWorld.CrowdControl.Effects
 
         public override EffectType Type => EffectType.Timed;
 
-        public override TimeSpan Duration { get; } = TimeSpan.FromSeconds(30); // TODO - Config
+        public override TimeSpan Duration { get; } = TimeSpan.FromSeconds(15); // TODO - Config
 
         public override string[] Mutex => new string[] { "PlayerSpeed" };
 
