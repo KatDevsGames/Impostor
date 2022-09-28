@@ -26,9 +26,9 @@ namespace Impostor.Server.WarpWorld.CrowdControl.Effects
         public override EffectType Type => EffectType.Timed;
 
         /// <summary>
-        /// The doors stay closed for 10 seconds, add 1 for safety
+        /// The doors stay closed for 10 seconds
         /// </summary>
-        public override TimeSpan Duration { get; } = TimeSpan.FromSeconds(11);
+        public override TimeSpan Duration { get; } = TimeSpan.FromSeconds(10);
 
         public override string[] Mutex => new string[] { "CloseAllDoors" };
 

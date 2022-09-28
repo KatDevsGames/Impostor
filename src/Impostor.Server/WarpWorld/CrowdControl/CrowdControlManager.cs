@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ConnectorLib;
 using ConnectorLib.JSON;
+using ConnectorLib.SimpleTCP;
 using Impostor.Api.Events;
 using Impostor.Api.Events.Managers;
 using Impostor.Api.Events.Player;
@@ -20,7 +21,7 @@ using Impostor.Server.WarpWorld.CrowdControl.Effects;
 using Impostor.Server.WarpWorld.CrowdControl.GameState;
 using Impostor.Server.WarpWorld.ExternalCommands;
 using Serilog;
-using ClientContext = ConnectorLib.SimpleTCPServerConnector<ConnectorLib.JSON.Response, ConnectorLib.JSON.Request>.ClientContext;
+using ClientContext = ConnectorLib.SimpleTCP.SimpleTCPServerConnector<ConnectorLib.JSON.Response, ConnectorLib.JSON.Request>.ClientContext;
 using Log = Serilog.Log;
 
 namespace Impostor.Server.WarpWorld.CrowdControl
@@ -33,7 +34,7 @@ namespace Impostor.Server.WarpWorld.CrowdControl
     {
         private readonly SimpleTCPServerConnector<Response, Request> tcpServer;
         private const DigestAlgorithm DIGEST_ALGORITHM = DigestAlgorithm.WHIRLPOOL;
-        private readonly ConcurrentDictionary<ClientContext, ManagerContext> contexts = new();
+        private readonly ConcurrentDictionary<ISimpleTCPContext, ManagerContext> contexts = new();
         private readonly ConcurrentDictionary<string, GameCode> codes = new();
         private readonly ConcurrentDictionary<GameCode, IntRef> connectionCounts = new();
 
@@ -61,7 +62,7 @@ namespace Impostor.Server.WarpWorld.CrowdControl
 
             logger = Log.ForContext<CrowdControlManager>();
 
-            ConnectorLib.Log.OnMessage += s => logger.Debug(s);
+            ConnectorLib.Log.OnMessage += (s, _) => logger.Debug(s);
             //var gameCodeCrowdControlSessionLookup = new ConcurrentDictionary<int, CrowdControlSessionInfo>();
 
             tcpServer = new();
@@ -124,7 +125,15 @@ namespace Impostor.Server.WarpWorld.CrowdControl
             connectionCounts.Remove(gameCode, out _);
         }
 
-        private async void OnMessageParsed(ISimpleTCPConnector<Response, Request, ClientContext> sender, Request request, ClientContext context)
+
+
+        private async void OnMessageParsed(ISimpleTCPConnector<Response, Request, ISimpleTCPContext> sender, Request message, ISimpleTCPContext context)
+        {
+            try { await MessageParsed(message, (ClientContext)context); }
+            catch (Exception e) { logger.Error(e, e.Message); }
+        }
+
+        private async Task MessageParsed(Request request, ClientContext context)
         {
             logger.Debug($"Got a request of type {request.type:G} from client {context.GetHashCode()}.");
             try
@@ -180,7 +189,7 @@ namespace Impostor.Server.WarpWorld.CrowdControl
                                 response.status = EffectResult.Success;
                                 if (e.Type == Effect.EffectType.Timed)
                                     response.timeRemaining = e.Duration.Milliseconds;
-                                ScheduleStop(e).Forget();
+                                ScheduleStop(e, request.duration.HasValue ? TimeSpan.FromSeconds(request.duration.Value) : e.Duration).Forget();
                             }
                             else
                             {
@@ -252,8 +261,6 @@ namespace Impostor.Server.WarpWorld.CrowdControl
                 logger.Error(e, e.Message);
             }
         }
-
-        private Task<bool> ScheduleStop(Effect effect) => ScheduleStop(effect, effect.Duration);
 
         private async Task<bool> ScheduleStop(Effect effect, TimeSpan delay)
         {
@@ -336,7 +343,9 @@ namespace Impostor.Server.WarpWorld.CrowdControl
         public void Start()
         {
             logger.Debug("Crowd Control listener is starting...");
-            tcpServer.Init("0.0.0.0", 38984, ISimpleTCPConnector.MessageType.JSON, ISimpleTCPConnector.FramingType.Null);
+            tcpServer.Host = "0.0.0.0";
+            tcpServer.Port = 38984;
+            tcpServer.Init();
         }
 
         [SuppressMessage("ReSharper", "InconsistentNaming")]
