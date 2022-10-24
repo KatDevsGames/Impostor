@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
+using Impostor.Api.Config;
 using Impostor.Api.Events;
 using Impostor.Api.Events.Managers;
 using Impostor.Api.Games;
@@ -12,7 +13,6 @@ using Impostor.Api.Net.Manager;
 using Impostor.Api.Net.Messages;
 using Impostor.Api.Utils;
 using Impostor.Hazel.Extensions;
-using Impostor.Server.Config;
 using Impostor.Server.Events;
 using Impostor.Server.Net;
 using Impostor.Server.Net.Custom;
@@ -106,6 +106,7 @@ namespace Impostor.Server
 
                     services.Configure<DebugConfig>(host.Configuration.GetSection(DebugConfig.Section));
                     services.Configure<AntiCheatConfig>(host.Configuration.GetSection(AntiCheatConfig.Section));
+                    services.Configure<CompatibilityConfig>(host.Configuration.GetSection(CompatibilityConfig.Section));
                     services.Configure<ServerConfig>(host.Configuration.GetSection(ServerConfig.Section));
                     services.Configure<ServerRedirectorConfig>(host.Configuration.GetSection(ServerRedirectorConfig.Section));
 

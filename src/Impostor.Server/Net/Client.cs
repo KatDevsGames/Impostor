@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Impostor.Api;
+using Impostor.Api.Config;
 using Impostor.Api.Games;
 using Impostor.Api.Innersloth;
 using Impostor.Api.Net;
@@ -10,7 +11,6 @@ using Impostor.Api.Net.Messages;
 using Impostor.Api.Net.Messages.C2S;
 using Impostor.Api.Net.Messages.S2C;
 using Impostor.Hazel;
-using Impostor.Server.Config;
 using Impostor.Server.Net.Manager;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -120,6 +120,12 @@ namespace Impostor.Server.Net
                             break;
                         case GameJoinError.GameDestroyed:
                             await DisconnectAsync(DisconnectReason.Custom, DisconnectMessages.Destroyed);
+                            break;
+                        case GameJoinError.ClientOutdated:
+                            await DisconnectAsync(DisconnectReason.Custom, DisconnectMessages.ClientOutdated);
+                            break;
+                        case GameJoinError.ClientTooNew:
+                            await DisconnectAsync(DisconnectReason.Custom, DisconnectMessages.ClientTooNew);
                             break;
                         case GameJoinError.Custom:
                             await DisconnectAsync(DisconnectReason.Custom, result.Message);
@@ -356,7 +362,7 @@ namespace Impostor.Server.Net
         {
             using var message = MessageWriter.Get(MessageType.Reliable);
 
-            var games = _gameManager.FindListings((MapFlags)options.Map, options.NumImpostors, options.Keywords);
+            var games = _gameManager.FindListings((MapFlags)options.Map, options.NumImpostors, options.Keywords, this.GameVersion);
 
             Message16GetGameListS2C.Serialize(message, games);
 

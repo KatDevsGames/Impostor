@@ -153,6 +153,20 @@ namespace Impostor.Server.Net.State
 
             var player = client.Player;
 
+            // Check if the player is running the same version as the host
+            if (_compatibilityConfig.AllowVersionMixing == false &&
+                this.Host != null && client.GameVersion != this.Host.Client.GameVersion)
+            {
+                if (client.GameVersion < this.Host.Client.GameVersion)
+                {
+                    return GameJoinResult.FromError(GameJoinError.ClientOutdated);
+                }
+                else
+                {
+                    return GameJoinResult.FromError(GameJoinError.ClientTooNew);
+                }
+            }
+
             // Check if;
             // - The player is already in this game.
             // - The game is full.

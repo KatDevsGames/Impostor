@@ -4,15 +4,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Impostor.Api.Config;
 using Impostor.Api.Events.Managers;
 using Impostor.Api.Innersloth;
 using Impostor.Api.Net;
 using Impostor.Api.Net.Messages;
 using Impostor.Hazel;
-using Impostor.Server.Config;
 using Impostor.Server.Events.Client;
 using Impostor.Server.Net.Factories;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Impostor.Server.Net.Manager
 {
@@ -27,20 +28,24 @@ namespace Impostor.Server.Net.Manager
             GameVersion.GetVersion(2022, 2, 2), // 2022.3.29 and 2022.4.19
             GameVersion.GetVersion(2022, 4, 20), // 2022.6.21 and 2022.7.12
             GameVersion.GetVersion(2022, 5, 12), // 2022.8.23
+            GameVersion.GetVersion(2022, 7, 25), // 2022.10.18
+            GameVersion.GetVersion(2022, 9, 2), // 2022.10.25
         };
 
         private readonly ILogger<ClientManager> _logger;
         private readonly IEventManager _eventManager;
         private readonly ConcurrentDictionary<int, ClientBase> _clients;
+        private readonly CompatibilityConfig _compatibilityConfig;
         private readonly IClientFactory _clientFactory;
         private int _idLast;
 
-        public ClientManager(ILogger<ClientManager> logger, IEventManager eventManager, IClientFactory clientFactory)
+        public ClientManager(ILogger<ClientManager> logger, IEventManager eventManager, IClientFactory clientFactory, IOptions<CompatibilityConfig> compatibilityConfig)
         {
             _logger = logger;
             _eventManager = eventManager;
             _clientFactory = clientFactory;
             _clients = new ConcurrentDictionary<int, ClientBase>();
+            _compatibilityConfig = compatibilityConfig.Value;
         }
 
         private enum VersionCompareResult
@@ -72,7 +77,12 @@ namespace Impostor.Server.Net.Manager
         public async ValueTask RegisterConnectionAsync(IHazelConnection connection, string name, int clientVersion, Language language, QuickChatModes chatMode, PlatformSpecificData? platformSpecificData)
         {
             var versionCompare = CompareVersion(clientVersion);
-            if (versionCompare != VersionCompareResult.Compatible || platformSpecificData == null)
+            if (versionCompare == VersionCompareResult.ServerTooOld && _compatibilityConfig.AllowFutureGameVersions && platformSpecificData != null)
+            {
+                GameVersion.ParseVersion(clientVersion, out var year, out var month, out var day, out var revision);
+                _logger.LogWarning("Client connected using future version: {clientVersion} ({version}). Unsupported, continue at your own risk.", clientVersion, $"{year}.{month}.{day}{(revision == 0 ? string.Empty : "." + revision)}");
+            }
+            else if (versionCompare != VersionCompareResult.Compatible || platformSpecificData == null)
             {
                 GameVersion.ParseVersion(clientVersion, out var year, out var month, out var day, out var revision);
                 _logger.LogTrace("Client connected using unsupported version: {clientVersion} ({version})", clientVersion, $"{year}.{month}.{day}{(revision == 0 ? string.Empty : "." + revision)}");
