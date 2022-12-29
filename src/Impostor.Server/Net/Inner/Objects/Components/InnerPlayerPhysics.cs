@@ -4,7 +4,6 @@ using Impostor.Api.Events.Managers;
 using Impostor.Api.Net;
 using Impostor.Api.Net.Custom;
 using Impostor.Api.Net.Inner;
-using Impostor.Api.Net.Messages;
 using Impostor.Api.Net.Messages.Rpcs;
 using Impostor.Server.Events.Player;
 using Impostor.Server.Net.State;
@@ -108,6 +107,18 @@ namespace Impostor.Server.Net.Inner.Objects.Components
                 case RpcCalls.ClimbLadder:
                     Rpc31ClimbLadder.Deserialize(reader, out var ladderId, out var lastClimbLadderSid);
                     break;
+
+                case RpcCalls.Pet:
+                {
+                    Rpc49Pet.Deserialize(reader, out var position, out var petPosition);
+                    break;
+                }
+
+                case RpcCalls.CancelPet:
+                {
+                    Rpc50CancelPet.Deserialize(reader);
+                    break;
+                }
 
                 default:
                     return await base.HandleRpcAsync(sender, target, call, reader);

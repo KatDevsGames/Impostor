@@ -4,13 +4,13 @@ using System.Threading.Tasks;
 using Impostor.Api;
 using Impostor.Api.Innersloth;
 using Impostor.Api.Net.Inner;
-using Impostor.Api.Net.Messages;
 using Impostor.Api.Unity;
 using Impostor.Server.Events.Meeting;
 using Impostor.Server.Events.Player;
 using Impostor.Server.Net.Inner;
 using Impostor.Server.Net.Inner.Objects;
 using Impostor.Server.Net.Inner.Objects.Components;
+using Impostor.Server.Net.Inner.Objects.GameManager;
 using Impostor.Server.Net.Inner.Objects.ShipStatus;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -41,6 +41,8 @@ namespace Impostor.Server.Net.State
             typeof(InnerPolusShipStatus),
             typeof(InnerSkeldShipStatus), // April fools skeld
             typeof(InnerAirshipStatus),
+            typeof(InnerHideAndSeekManager),
+            typeof(InnerNormalGameManager),
         };
 
         private readonly List<InnerNetObject> _allObjects = new List<InnerNetObject>();
@@ -288,6 +290,12 @@ namespace Impostor.Server.Net.State
         {
             switch (netObj)
             {
+                case InnerGameManager innerGameManager:
+                {
+                    GameNet.GameManager = innerGameManager;
+                    break;
+                }
+
                 case InnerLobbyBehaviour lobby:
                 {
                     GameNet.LobbyBehaviour = lobby;

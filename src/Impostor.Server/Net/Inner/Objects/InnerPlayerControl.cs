@@ -11,7 +11,6 @@ using Impostor.Api.Net;
 using Impostor.Api.Net.Custom;
 using Impostor.Api.Net.Inner;
 using Impostor.Api.Net.Inner.Objects;
-using Impostor.Api.Net.Messages;
 using Impostor.Api.Net.Messages.Rpcs;
 using Impostor.Api.Utils;
 using Impostor.Server.Events.Player;
@@ -118,7 +117,7 @@ namespace Impostor.Server.Net.Inner.Objects
                         return false;
                     }
 
-                    Rpc02SyncSettings.Deserialize(reader, Game.Options);
+                    Rpc02SyncSettings.DeserializeInto(reader, Game.Options);
                     break;
                 }
 
